@@ -16,6 +16,7 @@ class Doctor(BaseModel):
         first_name: str,
         last_name: str,
         other_names: Optional[str]=None,
+        specialty: Optional[str]=None,
         years_of_experience: int,
         contact: str,
         id: Optional[str]=None,
@@ -29,6 +30,7 @@ class Doctor(BaseModel):
         :param first_name: The first name of the doctor.
         :param last_name: The last name of the doctor.
         :param other_names: Other names of the doctor.
+        :param specialty: The specialty of the doctor.
         :param years_of_experience: The years of experience of the doctor.
         :param contact: The contact information of the doctor.
         :param id: The unique identifier for the doctor instance.
@@ -45,6 +47,7 @@ class Doctor(BaseModel):
         self.__first_name = first_name
         self.__last_name = last_name
         self.__other_names = other_names
+        self.__specialty = specialty
         self.__years_of_experience = years_of_experience
         self.__contact = contact
 
@@ -62,6 +65,11 @@ class Doctor(BaseModel):
     def other_names(self) -> Optional[str]:
         """Get the other names of the doctor."""
         return self.__other_names
+
+    @property
+    def specialty(self) -> Optional[str]:
+        """Get the specialty of the doctor."""
+        return self.__specialty
 
     @property
     def years_of_experience(self) -> int:
@@ -88,6 +96,11 @@ class Doctor(BaseModel):
         """Set the other names of the doctor."""
         self.__other_names = value
 
+    @specialty.setter
+    def specialty(self, value: Optional[str]) -> None:
+        """Set the specialty of the doctor."""
+        self.__specialty = value
+
     @years_of_experience.setter
     def years_of_experience(self, value: int) -> None:
         """Set the gender of the doctor."""
@@ -109,6 +122,7 @@ class Doctor(BaseModel):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "other_names": self.other_names,
+            "specialty": self.specialty,
             "years_of_experience": self.years_of_experience,
             "contact": self.contact,
             "date_created": self._convert_to_string(date=self.date_created),
@@ -129,6 +143,7 @@ class Doctor(BaseModel):
             first_name=data.get("first_name"),
             last_name=data.get("last_name"),
             other_names=data.get("other_names"),
+            specialty=data.get("specialty"),
             years_of_experience=data.get("years_of_experience"),
             contact=data.get("contact"),
             date_created=data.get("date_created"),

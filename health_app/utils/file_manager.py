@@ -17,7 +17,7 @@ class FileManager:
         self._file_path = self.__set_file_path(file_path=file_path)
 
     @abstractmethod
-    def read_file(self) -> str:
+    def read_file(self) -> list[dict]:
         """
         Abstract method to read the file.
 
