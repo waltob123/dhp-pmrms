@@ -79,7 +79,7 @@ class Appointment(BaseModel):
     @appointment_date.setter
     def appointment_date(self, value: str) -> None:
         """Set the date and time of the appointment."""
-        self.__appointment_date = self.__set_date(date=value)
+        self.__appointment_date = self._set_date(date=value)
 
     @status.setter
     def status(self, value: str) -> None:

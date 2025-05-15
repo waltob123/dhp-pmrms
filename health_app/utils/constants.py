@@ -8,18 +8,16 @@ DATA_DIR = Path(os.path.join(APP_DIR, "data"))
 
 BASE_FILTERS = ["first_name", "last_name", "contact"]
 
-ALLOWED_PATIENT_FILTERS = BASE_FILTERS.copy()
+ALLOWED_PATIENT_FILTERS = ["patient_number"].extend(BASE_FILTERS)
 ALLOWED_DOCTOR_FILTERS = ["specialty"].extend(BASE_FILTERS)
 ALLOWED_APPOINTMENT_FILTERS = ["doctor_id", "patient_id", "appointment_date", "status"]
 ALLOWED_MEDICAL_RECORD_FILTERS = ["patient_id"]
 
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+DATE_FORMAT_PATTERN = r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$"
 
-class Pagination(Enum):
-    """
-    Enum for pagination.
-    """
-    PAGE_SIZE = 10
-    PAGE = 1
+PAGE = 1
+PAGE_SIZE = 10
 
 
 class Gender(Enum):
@@ -37,3 +35,11 @@ class Appointment(Enum):
     SCHEDULED = "scheduled"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
+
+
+class HTTPResponseStatus(Enum):
+    """
+    Enum for HTTP response status.
+    """
+    SUCCESS = "success"
+    ERROR = "error"

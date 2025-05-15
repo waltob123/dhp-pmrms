@@ -85,12 +85,12 @@ class MedicalRecord(BaseModel):
     @patient_id.setter
     def patient_id(self, value: str) -> None:
         """Set the unique identifier for the patient associated with the medical record."""
-        self.__patient_id = value
+        raise AttributeError("patient_id is read-only and cannot be modified.")
 
     @recorded_by.setter
     def recorded_by(self, value: str) -> None:
         """Set the unique identifier for the doctor who recorded the medical record."""
-        self.__recorded_by = value
+        raise AttributeError("recorded_by is read-only and cannot be modified.")
 
     @diagnosis.setter
     def diagnosis(self, value: list[str]) -> None:

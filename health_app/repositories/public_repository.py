@@ -1,4 +1,4 @@
-from health_app.utils.constants import Pagination
+from health_app.utils.constants import PAGE, PAGE_SIZE
 from health_app.utils.file_manager import FileManager
 
 
@@ -106,8 +106,8 @@ class PublicRepository:
         :param page_size: The number of records per page.
         :return: The offset for pagination.
         """
-        page = page if page > 0 else Pagination.PAGE.value
-        page_size = page_size if page_size > 0 else Pagination.PAGE_SIZE.value
+        page = page if page > 0 else PAGE
+        page_size = page_size if page_size > 0 else PAGE_SIZE
         return (page - 1) * page_size
 
     @staticmethod

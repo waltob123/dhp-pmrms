@@ -1,3 +1,4 @@
+from datetime import timezone, datetime
 from typing import Optional
 
 from health_app.models.base_model import BaseModel
@@ -13,6 +14,7 @@ class Patient(BaseModel):
     def __init__(
         self,
         *,
+        patient_number: Optional[str]=None,
         first_name: str,
         last_name: str,
         other_names: Optional[str]=None,
@@ -46,6 +48,7 @@ class Patient(BaseModel):
             date_updated=date_updated,
             date_deleted=date_deleted
         )
+        self.__patient_number = patient_number if patient_number else self.__generate_patient_number()
         self.__first_name = first_name
         self.__last_name = last_name
         self.__other_names = other_names
@@ -53,6 +56,11 @@ class Patient(BaseModel):
         self.__contact = contact
         self.__address = address
         self.__emergency_contact = emergency_contact
+
+    @property
+    def patient_number(self) -> str:
+        """Get the unique patient number."""
+        return self.__patient_number
 
     @property
     def first_name(self) -> str:
@@ -89,6 +97,11 @@ class Patient(BaseModel):
         """Get the emergency contact information of the patient."""
         return self.__emergency_contact
 
+    @patient_number.setter
+    def patient_number(self, value: str) -> None:
+        """Set the unique patient number."""
+        self.__patient_number = value
+
     @first_name.setter
     def first_name(self, value: str) -> None:
         """Set the first name of the patient."""
@@ -124,6 +137,15 @@ class Patient(BaseModel):
         """Set the emergency contact information of the patient."""
         self.__emergency_contact = value
 
+    @staticmethod
+    def __generate_patient_number() -> str:
+        """
+        Generate a unique patient number.
+
+        :return: A unique patient number.
+        """
+        return f"P-{datetime.now(tz=timezone.utc).timestamp()}"
+
     def to_dict(self) -> dict:
         """
         Convert the Patient instance to a dictionary.
@@ -132,6 +154,7 @@ class Patient(BaseModel):
         """
         return {
             "id": self.id,
+            "patient_number": self.patient_number,
             "first_name": self.first_name,
             "last_name": self.last_name,
             "other_names": self.other_names,
@@ -154,6 +177,7 @@ class Patient(BaseModel):
         """
         return cls(
             id=data.get("id"),
+            patient_number=data.get("patient_number"),
             first_name=data.get("first_name"),
             last_name=data.get("last_name"),
             other_names=data.get("other_names"),
