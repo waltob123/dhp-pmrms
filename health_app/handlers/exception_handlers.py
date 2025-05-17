@@ -1,12 +1,12 @@
-from fastapi import HTTPException, Request, status
-from fastapi.exceptions import RequestValidationError
+from fastapi import Request, status
+from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import JSONResponse
 
 from health_app.schemas.response import ResponseSchema
 from health_app.utils.constants import HTTPResponseStatus
 
 
-def http_exception_handler(request: Request, exception: HTTPException) -> JSONResponse:
+async def http_exception_handler(request: Request, exception: HTTPException) -> JSONResponse:
     """
     Custom exception handler for HTTP exceptions.
 
@@ -21,7 +21,7 @@ def http_exception_handler(request: Request, exception: HTTPException) -> JSONRe
     ).to_json_response()
 
 
-def validation_exception_handler(request: Request, exception: RequestValidationError) -> JSONResponse:
+async def validation_exception_handler(request: Request, exception: RequestValidationError) -> JSONResponse:
     """
     Custom exception handler for validation exceptions.
 

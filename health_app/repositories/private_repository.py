@@ -3,6 +3,7 @@ from typing import Type
 from pydantic import BaseModel as PydanticBaseModel
 
 from health_app.models.base_model import BaseModel
+from health_app.utils.exceptions import FailedToSaveObjectException
 from health_app.utils.file_manager import FileManager
 
 
@@ -29,7 +30,10 @@ class PrivateRepository:
         :return: The created object.
         """
         model_instance = model(**data.model_dump())
-        self._save(object_to_save=model_instance.to_dict())
+        try:
+            self._save(object_to_save=model_instance.to_dict())
+        except Exception as e:
+            raise FailedToSaveObjectException(f"Failed to save object: {e}")
         return model_instance
 
     def update(self, *, data_to_update: BaseModel, update_data: PydanticBaseModel) -> BaseModel:
@@ -48,7 +52,11 @@ class PrivateRepository:
         except AttributeError as e:
             raise AttributeError(f"Attribute error: {e}")
 
-        self._save(object_to_save=data_to_update.to_dict())
+        data_to_update.date_updated = data_to_update.get_current_datetime()
+        try:
+            self._save(object_to_save=data_to_update.to_dict())
+        except Exception as e:
+            raise FailedToSaveObjectException(f"Failed to save object: {e}")
         return data_to_update
 
     def delete(self, *, object_to_delete: BaseModel) -> BaseModel:
@@ -59,7 +67,10 @@ class PrivateRepository:
         :return: The deleted object.
         """
         deleted_object = object_to_delete.soft_delete()
-        self._save(object_to_save=deleted_object.to_dict())
+        try:
+            self._save(object_to_save=deleted_object.to_dict())
+        except Exception as e:
+            raise FailedToSaveObjectException(f"Failed to save object: {e}")
         return deleted_object
 
     def restore(self, *, object_to_restore: BaseModel) -> BaseModel:
@@ -70,7 +81,10 @@ class PrivateRepository:
         :return: The restored object.
         """
         restored_object = object_to_restore.restore()
-        self._save(object_to_save=restored_object.to_dict())
+        try:
+            self._save(object_to_save=restored_object.to_dict())
+        except Exception as e:
+            raise FailedToSaveObjectException(f"Failed to save object: {e}")
         return restored_object
 
     def _save(self, *, object_to_save: dict) -> None:
@@ -83,5 +97,15 @@ class PrivateRepository:
             raise TypeError("object_to_save must be a dictionary")
 
         results = self._db_connection.read_file()
-        results.append(object_to_save)
+        updated = False
+
+        for idx, record in enumerate(results):
+            if record.get("id") == object_to_save.get("id"):
+                results[idx] = object_to_save
+                updated = True
+                break
+
+        if not updated:
+            results.append(object_to_save)
+
         self._db_connection.write_file(content=results)

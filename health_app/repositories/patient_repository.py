@@ -11,7 +11,7 @@ class PatientRepository(PublicRepository, PrivateRepository):
     (PrivateRepository) This class inherits from the PrivateRepository
     """
 
-    def __init__(self, *, db_connection: FileManager, allowed_filters: dict, allowed_sort: dict) -> None:
+    def __init__(self, *, db_connection: FileManager, allowed_filters: list, allowed_sort: list) -> None:
         """
         Initializes the PatientRepository with a database connection.
 

@@ -11,8 +11,8 @@ class BaseReadSchema(BaseModel):
     This schema is used to define the structure of the data returned by the API.
     """
     id: str
-    created_at: str
-    updated_at: Optional[str] = None
+    date_created: str
+    date_updated: Optional[str] = None
 
     @field_validator("id")
     @classmethod

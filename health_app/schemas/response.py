@@ -1,4 +1,4 @@
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Any
 
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, field_validator, Field
@@ -11,10 +11,10 @@ class ResponseSchema(BaseModel):
     status: str
     status_code: int = Field(..., ge=100, le=599)
     message: str = Field(..., min_length=1)
-    data: Optional[Union[List[BaseReadSchema], BaseReadSchema]]= None
+    data: Optional[Union[List[Any], Any]]= None
     extras: Optional[dict] = None
 
-    @field_validator
+    @field_validator("status")
     @classmethod
     def validate_status(cls, value: str) -> str:
         """
@@ -31,5 +31,11 @@ class ResponseSchema(BaseModel):
         """
         return JSONResponse(
             status_code=self.status_code,
-            content=self.model_dump()
+            content={
+                "status": self.status,
+                "status_code": self.status_code,
+                "message": self.message,
+                "data": self.data,
+                "extras": self.extras
+            }
         )

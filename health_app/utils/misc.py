@@ -19,6 +19,15 @@ def filter_sort_processor(*, filters_or_sort_param: list) -> dict:
         if value.isdigit():
             value = int(value)
 
+        # Convert boolean values to booleans
+        if key == "is_deleted":
+            if value.lower().strip() == "true":
+                value = True
+            elif value.lower().strip() == "false":
+                value = False
+            elif value.lower().strip() == "none":
+                value = None
+
         # Handle duplicate keys
         if key in results:
             if isinstance(results[key], list):
@@ -27,7 +36,6 @@ def filter_sort_processor(*, filters_or_sort_param: list) -> dict:
                 results[key] = [results[key], value]
         else:
             results[key] = value
-
     return results
 
 

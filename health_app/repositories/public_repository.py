@@ -1,4 +1,6 @@
+from health_app.models.patient import Patient
 from health_app.utils.constants import PAGE, PAGE_SIZE
+from health_app.utils.exceptions import EntityDoesNotExistException
 from health_app.utils.file_manager import FileManager
 
 
@@ -7,7 +9,7 @@ class PublicRepository:
     Interface for the repository layer in the health app.
     """
 
-    def __init__(self, *, db_connection: FileManager, allowed_filters: dict, allowed_sort: dict) -> None:
+    def __init__(self, *, db_connection: FileManager, allowed_filters: list, allowed_sort: list) -> None:
         """
         Initializes the repository with a database connection.
 
@@ -19,7 +21,7 @@ class PublicRepository:
         self.__allowed_filters = allowed_filters
         self.__allowed_sort = allowed_sort
 
-    def get_all(self, *, filters: dict, sort: dict) -> list[dict]:
+    def get_all(self, *, filters: dict, sort: dict) -> list[Patient]:
         """
         Get all records from the database.
 
@@ -30,26 +32,36 @@ class PublicRepository:
         results = self._db_connection.read_file()
         final_result = []
 
-        for key, value in filters.items():
-            if key in self.__allowed_filters:
-                for record in results:
-                    if key in record.keys():
-                        if record[key] == value:
-                            final_result.append(record)
+        if any([key in filters for key in self.__allowed_filters]):
+            for key, value in filters.items():
+                if key in self.__allowed_filters:
+                    for record in results:
+                        if key in record.keys():
+                            if record[key] == value:
+                                if filters["is_deleted"] is False:
+                                    if record["date_deleted"] is None:
+                                        final_result.append(record)
+                                if filters["is_deleted"] is True:
+                                    if record["date_deleted"] is not None:
+                                        final_result.append(record)
+                                if filters["is_deleted"] is None:
+                                    final_result.append(record)
+        else:
+            final_result = results
 
         if "page" in filters and "page_size" in filters:
             final_result = PublicRepository.apply_pagination(
                 records=final_result, page=filters.get("page"), page_size=filters.get("page_size")
             )
 
-        if "order_by" in sort and "order_mode" in sort:
+        if "order_by" in sort and "order_mode" in sort and "order_by" in self.__allowed_sort:
             final_result = PublicRepository.apply_sort(
                 records=final_result, order_by=sort.get("order_by"), order_mode=sort.get("order_mode")
             )
 
-        return final_result
+        return [Patient.from_dict(data=patient) for patient in final_result]
 
-    def get_by_id(self, record_id: str) -> dict:
+    def get_by_id(self, record_id: str) -> Patient:
         """
         Abstract method to get a record by its ID.
 
@@ -59,10 +71,12 @@ class PublicRepository:
         results = self._db_connection.read_file()
         result = [
             record for record in results if record["id"] == record_id
-        ][0]
-        return result
+        ]
+        if len(result) == 0:
+            raise EntityDoesNotExistException("Record not found.")
+        return Patient.from_dict(data=result[0])
 
-    def get_by_field(self, *, field: str, value: str) -> list[dict]:
+    def get_by_field(self, *, field: str, value: str) -> list[Patient]:
         """
         Abstract method to get records by a specific field.
 
@@ -77,7 +91,7 @@ class PublicRepository:
         result = [
             record for record in results if record[field] == value
         ]
-        return result
+        return [Patient.from_dict(patient) for patient in result]
 
     def check_if_exists_but_deleted(self, *, record_id: str) -> bool:
         """
@@ -86,7 +100,7 @@ class PublicRepository:
         :param record_id: The ID of the record to check.
         :return: True if the record exists but is deleted, False otherwise.
         """
-        return bool(self.get_by_id(record_id=record_id).get("deleted_at"))
+        return bool(self.get_by_id(record_id=record_id).date_deleted)
 
     def check_if_exists(self, *, record_id: str) -> bool:
         """

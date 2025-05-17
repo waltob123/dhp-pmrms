@@ -22,6 +22,8 @@ class Patient(BaseModel):
         contact: str,
         address: str,
         emergency_contact: str,
+        date_of_birth: str,
+        age: Optional[int]=None,
         id: Optional[str]=None,
         date_created: Optional[str]=None,
         date_updated: Optional[str]=None,
@@ -37,6 +39,8 @@ class Patient(BaseModel):
         :param contact: The contact information of the patient.
         :param address: The address of the patient.
         :param emergency_contact: The emergency contact information of the patient.
+        :param date_of_birth: The date of birth of the patient.
+        :param age: The age of the patient.
         :param id: The unique identifier for the patient instance.
         :param date_created: The date and time when the patient instance was created.
         :param date_updated: The date and time when the patient instance was last updated.
@@ -56,6 +60,8 @@ class Patient(BaseModel):
         self.__contact = contact
         self.__address = address
         self.__emergency_contact = emergency_contact
+        self.__date_of_birth = self._set_date(date=date_of_birth)
+        self.__age = self.__set_age(age=age)
 
     @property
     def patient_number(self) -> str:
@@ -97,6 +103,16 @@ class Patient(BaseModel):
         """Get the emergency contact information of the patient."""
         return self.__emergency_contact
 
+    @property
+    def date_of_birth(self) -> datetime:
+        """Get the date of birth of the patient."""
+        return self.__date_of_birth
+
+    @property
+    def age(self) -> int:
+        """Get the age of the patient."""
+        return self.__age
+
     @patient_number.setter
     def patient_number(self, value: str) -> None:
         """Set the unique patient number."""
@@ -137,6 +153,31 @@ class Patient(BaseModel):
         """Set the emergency contact information of the patient."""
         self.__emergency_contact = value
 
+    @date_of_birth.setter
+    def date_of_birth(self, value: str) -> None:
+        """Set the date of birth of the patient."""
+        self.__date_of_birth = self._set_date(date=value)
+
+    @age.setter
+    def age(self, value: int) -> None:
+        """Set the age of the patient."""
+        raise AttributeError("Age is a read-only property. It is calculated from the date of birth.")
+
+    def __set_age(self, age: Optional[int]=None) -> int:
+        """
+        Calculate the age of the patient based on the date of birth.
+
+        :param age: The age of the patient.
+        :return: The age of the patient.
+        """
+        if age is not None:
+            return age
+
+        if age is None:
+            current_year = datetime.now(tz=timezone.utc).year
+            birth_year = self.__date_of_birth.year
+            return current_year - birth_year
+
     @staticmethod
     def __generate_patient_number() -> str:
         """
@@ -144,7 +185,7 @@ class Patient(BaseModel):
 
         :return: A unique patient number.
         """
-        return f"P-{datetime.now(tz=timezone.utc).timestamp()}"
+        return f"P-{str(datetime.now(tz=timezone.utc).timestamp()).replace(".", "-")}"
 
     def to_dict(self) -> dict:
         """
@@ -162,6 +203,8 @@ class Patient(BaseModel):
             "contact": self.contact,
             "address": self.address,
             "emergency_contact": self.emergency_contact,
+            "date_of_birth": self._convert_to_string(date=self.date_of_birth),
+            "age": self.age,
             "date_created": self._convert_to_string(date=self.date_created),
             "date_updated": self._convert_to_string(date=self.date_updated),
             "date_deleted": self._convert_to_string(date=self.date_deleted)
@@ -185,6 +228,8 @@ class Patient(BaseModel):
             contact=data.get("contact"),
             address=data.get("address"),
             emergency_contact=data.get("emergency_contact"),
+            date_of_birth=data.get("date_of_birth"),
+            age=data.get("age"),
             date_created=data.get("date_created"),
             date_updated=data.get("date_updated"),
             date_deleted=data.get("date_deleted")

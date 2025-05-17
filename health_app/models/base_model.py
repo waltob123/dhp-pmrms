@@ -4,14 +4,12 @@ from abc import abstractmethod
 from datetime import datetime, timezone
 from typing import Optional
 
+from health_app.utils.constants import DATE_FORMAT_WITH_TIME, DATE_FORMAT_PATTERN, DATE_FORMAT_WITHOUT_TIME
 from health_app.utils.exceptions import InvalidDateFormatException
 
 
 class BaseModel:
     """BaseModel class for all models in the application."""
-
-    _DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
-    _DATE_STRING_PATTERN = r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$"
 
     def __init__(
         self,
@@ -78,7 +76,7 @@ class BaseModel:
         """
         Soft delete the model instance by setting the date_deleted attribute to the current date and time.
         """
-        self.date_deleted = self._get_current_datetime()
+        self.date_deleted = self.get_current_datetime()
         return self
 
     def restore(self):
@@ -108,7 +106,7 @@ class BaseModel:
         """
         if date_created:
             return self._convert_to_datetime(date_string=date_created)
-        return self._get_current_datetime()
+        return self.get_current_datetime()
 
     def _set_date(self, *, date: Optional[str]) -> Optional[datetime]:
         """
@@ -138,12 +136,15 @@ class BaseModel:
         :param date_string: The date string to convert.
         :return: The timestamp.
         """
-        if not re.match(BaseModel._DATE_STRING_PATTERN, date_string):
+        if not re.match(DATE_FORMAT_PATTERN, date_string):
             raise InvalidDateFormatException(
-                f"Invalid date format: {date_string}. Expected format: {BaseModel._DATE_FORMAT}"
+                f"Invalid date format: {date_string}. Expected format: {DATE_FORMAT_WITH_TIME}"
             )
 
-        return datetime.strptime(date_string, BaseModel._DATE_FORMAT)
+        try:
+            return datetime.strptime(date_string, DATE_FORMAT_WITH_TIME)
+        except ValueError:
+            return datetime.strptime(date_string, DATE_FORMAT_WITHOUT_TIME)
 
     @staticmethod
     def _convert_to_string(*, date: datetime) -> str:
@@ -153,10 +154,10 @@ class BaseModel:
         :param date: The timestamp to convert.
         :return: The date string.
         """
-        return datetime.strftime(date, BaseModel._DATE_FORMAT) if date else None
+        return datetime.strftime(date, DATE_FORMAT_WITH_TIME) if date else None
 
     @staticmethod
-    def _get_current_datetime() -> datetime:
+    def get_current_datetime() -> datetime:
         """
         Get the current date and time.
 
