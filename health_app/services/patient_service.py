@@ -1,10 +1,10 @@
-from fastapi import HTTPException, Request, status
+from fastapi import HTTPException, status
 
 from health_app.models.patient import Patient
 from health_app.repositories.patient_repository import PatientRepository
-from health_app.schemas.patient import CreatePatientSchema, UpdatePatientSchema
+from health_app.schemas.patient import CreatePatientSchema
 from health_app.services.base_service import BaseService
-from health_app.utils.exceptions import EntityDoesNotExistException, FailedToSaveObjectException
+from health_app.utils.exceptions import FailedToSaveObjectException
 
 
 class PatientService(BaseService):
